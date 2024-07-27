@@ -30,6 +30,8 @@ class MyBot:
         self.name = "Magellan"
         self.rad = 0
         self.history = {}
+        self.move_target = (50, 50)
+        self.go = {"left": False, "right": False, "up": False, "down": False}
 
     def on_tick(
         self, game_state: GameState
@@ -93,29 +95,47 @@ class MyBot:
         aristo = self.get_player("aristochat45", -1)
         last_aristo = self.get_player("aristochat45", -2)
 
-        last_coordinates = last_aristo.pos
-        last_dir = last_aristo.dest
-        expected_position = self.expect_position(
-            0.0345, last_coordinates.x, last_coordinates.y, last_dir.x, last_dir.y
-        )
-        print(expected_position)
-        print(
-            self.hit_wall(
-                aristo.pos.x, aristo.pos.y, expected_position[0], expected_position[1]
-            )
-        )
+        print("shiz", self.did_hit_wall(aristo, last_aristo))
 
-        if self.toggle:
-            print(f"Current tick: {game_state.current_tick}")
-            self.toggle = False
+        if self.did_hit_wall(aristo, last_aristo):
+            x = round(aristo.pos.x, 1)
+            y = round(aristo.pos.y, 1)
+
+            print(x, y, x % 5, y % 5)
+            # print(
+            #     "hit wall",
+            #     aristo.pos.x,
+            #     aristo.pos.y,
+            #     "going_left",
+            #     self.going_left(aristo),
+            #     "going_right",
+            #     self.going_right(aristo),
+            #     "going_up",
+            #     self.going_up(aristo),
+            #     "going_down",
+            #     self.going_down(aristo),
+            # )
+
         self.rad += 0.35
         actions = [
-            MoveAction((1000, 1000)),
+            MoveAction(self.move_target),
             RotateBladeAction(self.rad),
             SaveAction(b"Hello World"),
         ]
 
         return actions
+
+    def going_left(self, player):
+        return player.pos.x > self.move_target[0]
+
+    def going_right(self, player):
+        return player.pos.x < self.move_target[0]
+
+    def going_up(self, player):
+        return player.pos.y > self.move_target[1]
+
+    def going_down(self, player):
+        return player.pos.y < self.move_target[1]
 
     def get_player(self, name, index):
         return list(
@@ -128,17 +148,22 @@ class MyBot:
     def get_state(self, index):
         return self.history[list(self.history.keys())[index]]
 
-    def hit_wall(self, x, y, intended_x, intended_y):
-        print(x, y, intended_x, intended_y)
-        return not (x == intended_x and y == intended_y)
+    def did_hit_wall(self, current, last):
+        x, y = current.pos.x, current.pos.y
+        x2, y2 = last.pos.x, last.pos.y
+        delatx = x2 - x
+        deltay = y2 - y
+        return not (delatx and deltay)
 
-    def expect_position(self, speed, xi, yi, xf, yf):
-        distance = [xf - xi, yf - yi]
-        norm = math.sqrt(distance[0] ** 2 + distance[1] ** 2)
-        direction = map(lambda d: d / norm, distance)
+    # def expect_position(self, speed, xi, yi, xf, yf):
+    #     distance = [xf - xi, yf - yi]
+    #     angle = math.asin(distance[1] / distance[0])
 
-        move = list(map(lambda i: i * speed, direction))
-        return [xi + move[0], yi + move[0]]
+    #     norm = math.sqrt(distance[0] ** 2.0 + distance[1] ** 2.0)
+    #     direction = map(lambda d: d / norm, distance)
+
+    #     move = list(map(lambda i: i * speed, direction))
+    #     return [xi + move[0], yi + move[0]]
 
     def on_start(self, map_state: MapState):
         """
