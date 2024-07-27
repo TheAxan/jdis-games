@@ -31,7 +31,7 @@ class MyBot:
         self.rad = 0
         self.history = {}
         self.move_target = (50, 50)
-        self.go = {"left": False, "right": False, "up": False, "down": False}
+        self.go = [-1, -1]
 
     def on_tick(
         self, game_state: GameState
@@ -101,22 +101,25 @@ class MyBot:
             x = round(aristo.pos.x, 1)
             y = round(aristo.pos.y, 1)
 
-            print(x, y, x % 5, y % 5)
-            # print(
-            #     "hit wall",
-            #     aristo.pos.x,
-            #     aristo.pos.y,
-            #     "going_left",
-            #     self.going_left(aristo),
-            #     "going_right",
-            #     self.going_right(aristo),
-            #     "going_up",
-            #     self.going_up(aristo),
-            #     "going_down",
-            #     self.going_down(aristo),
-            # )
+            if x % 5 == 0.5:
+                self.go[0] = 1
+                # wall left
+            elif x % 5 == 4.5:
+                self.go[0] = -1
+                # wall right
+            elif y % 5 == 0.5:
+                self.go[1] = 1
+                # wall up
+            elif y % 5 == 4.5:
+                self.go[1] = -1
+                # wall down
 
         self.rad += 0.35
+
+        self.move_target = (
+            aristo.pos.x + 3 * self.go[0],
+            aristo.pos.y + 3 * self.go[1],
+        )
         actions = [
             MoveAction(self.move_target),
             RotateBladeAction(self.rad),
