@@ -1,1 +1,0 @@
-npx tsc src/index.ts
