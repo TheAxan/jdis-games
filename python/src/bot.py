@@ -121,9 +121,12 @@ class MyBot:
         return list(
             filter(
                 lambda player: player.name == name,
-                self.history[list(self.history.keys())[index]].players,
+                self.get_state(index).players,
             )
         )[0]
+
+    def get_state(self, index):
+        return self.history[list(self.history.keys())[index]]
 
     def hit_wall(self, x, y, intended_x, intended_y):
         print(x, y, intended_x, intended_y)
